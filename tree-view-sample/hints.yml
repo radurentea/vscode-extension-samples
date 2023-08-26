@@ -1,0 +1,17 @@
+errors:
+  - type: "NullPointerError"
+    hint: "Check if your object is properly initialized before accessing its methods or attributes."
+  - type: "NullPointerError2"
+    hint: "This is a second error"
+ 
+ 
+ 
+ 
+  - type: "ArrayOutOfBounds"
+    hint: "Ensure you're not accessing an array element outside of its defined range."
+
+  - type: "TypeError"
+    hint: "Ensure variables or function arguments are of the expected type."
+
+  - type: "DatabaseConnectionFailed"
+    hint: "Check your database connection string and ensure the database is running."

@@ -1,6 +1,9 @@
 'use strict';
 
 import * as vscode from 'vscode';
+import * as path from 'path';
+import * as yaml from 'js-yaml';
+import * as fs from 'fs';
 
 import { DepNodeProvider, Dependency } from './nodeDependencies';
 import { JsonOutlineProvider } from './jsonOutline';
@@ -47,4 +50,83 @@ export function activate(context: vscode.ExtensionContext) {
 	new TestView(context);
 
 	new TestViewDragAndDrop(context);
+
+	// ERROR HINTS
+
+	const treeDataProvider = new ErrorHintProvider(context);
+    vscode.window.registerTreeDataProvider('errorHints', treeDataProvider);
+
+    vscode.commands.registerCommand('extension.searchError', async () => {
+        const errorMsg = await vscode.window.showInputBox({ placeHolder: 'Enter the error message' });
+        if (errorMsg) {
+            treeDataProvider.searchError(errorMsg);
+        }
+    });
+
+	vscode.commands.registerCommand('extension.promptErrorSearch', async () => {
+		const errorMsg = await vscode.window.showInputBox({
+			placeHolder: 'Enter the error message'
+		});
+		if (errorMsg) {
+			treeDataProvider.searchError(errorMsg);
+		}
+	});
+
+}
+
+class ErrorHint {
+	constructor(public readonly label: string) { }
+}
+
+class ErrorHintProvider implements vscode.TreeDataProvider<ErrorHint> {
+	constructor(private context: vscode.ExtensionContext) { }
+	private _onDidChangeTreeData: vscode.EventEmitter<ErrorHint | undefined | null | void> = new vscode.EventEmitter<ErrorHint | undefined | null | void>();
+	readonly onDidChangeTreeData: vscode.Event<ErrorHint | undefined | null | void> = this._onDidChangeTreeData.event;
+
+	private data: ErrorHint[] = [];
+
+	searchError(errorMsg: string) {
+		console.log(`Searching for: ${errorMsg}`);  // Log the search query
+
+
+		// somewhere in your code where you have access to the `context` object
+		const filePath = path.join(this.context.extensionPath, 'hints.yml');
+
+
+	
+		// Load the hints from your YAML file
+		const fileContents = fs.readFileSync(filePath, 'utf-8');
+		const hintsData = yaml.load(fileContents) as any;
+	
+		// Search the hints based on the errorMsg and populate the data array
+		this.data = [];
+		for (const error of hintsData.errors) {
+			if (error.type.includes(errorMsg)) {
+				this.data.push(new ErrorHint(`${error.type}: ${error.hint}`));
+				console.log(`Found hint: ${error.type}: ${error.hint}`);  // Log found hint
+			}
+		}
+	
+		if (!this.data.length) {
+			console.log('No hints found');  // Log if no hints found
+		}
+	
+		// Refresh the tree view
+		this._onDidChangeTreeData.fire();
+	}
+
+	getTreeItem(element: ErrorHint): vscode.TreeItem {
+		return {
+			label: element.label,
+			tooltip: element.label
+		};
+	}
+
+	getChildren(element?: ErrorHint): Thenable<ErrorHint[]> {
+		if (element) {
+			return Promise.resolve([]);
+		} else {
+			return Promise.resolve(this.data);
+		}
+	}
 }

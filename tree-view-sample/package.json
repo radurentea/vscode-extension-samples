@@ -23,10 +23,15 @@
 	"main": "./out/extension.js",
 	"contributes": {
 		"viewsContainers": {
-			"activitybar": [
+			"panel": [
 				{
 					"id": "package-explorer",
 					"title": "Package Explorer",
+					"icon": "media/dep.svg"
+				},
+				{
+					"id": "espIdfHints",
+					"title": "ESP-IDF",
 					"icon": "media/dep.svg"
 				}
 			]
@@ -40,6 +45,11 @@
 					"contextualTitle": "Package Explorer"
 				}
 			],
+			"espIdfHints": [{
+				"id": "errorHints",
+                "name": "Error Hints",
+                "title": "Error Hints ($errorHints.count$)"
+			}],
 			"explorer": [
 				{
 					"id": "jsonOutline",
@@ -65,6 +75,15 @@
 			]
 		},
 		"commands": [
+
+			{
+				"command": "extension.promptErrorSearch",
+				"title": "Search Error"
+			},
+			{
+				"command": "extension.searchError",
+				"title": "Search Error Hint"
+			},
 			{
 				"command": "nodeDependencies.refreshEntry",
 				"title": "Refresh",
@@ -152,7 +171,23 @@
 					"command": "ftpExplorer.revealResource"
 				}
 			],
+			"editor/title": [
+				{
+					"command": "extension.searchError",
+					"group": "navigation"
+				}
+			],
+			"editor/context": [
+				{
+					"command": "extension.searchError"
+				}
+			],
 			"view/title": [
+				{
+					"command": "extension.promptErrorSearch",
+					"group": "navigation",
+					"when": "view == errorHints"
+				},
 				{
 					"command": "nodeDependencies.refreshEntry",
 					"when": "view == nodeDependencies",
@@ -176,6 +211,7 @@
 					"when": "view == ftpExplorer",
 					"group": "navigation"
 				}
+				
 			],
 			"view/item/context": [
 				{
@@ -223,6 +259,7 @@
 	},
 	"devDependencies": {
 		"@types/ftp": "^0.3.33",
+		"@types/js-yaml": "^4.0.5",
 		"@types/mkdirp": "^0.5.2",
 		"@types/node": "^16.18.34",
 		"@types/rimraf": "^2.0.2",
@@ -234,6 +271,7 @@
 	},
 	"dependencies": {
 		"ftp": "^0.3.10",
+		"js-yaml": "^4.1.0",
 		"jsonc-parser": "^0.4.2",
 		"minimist": "^1.2.6",
 		"mkdirp": "^0.5.1",
